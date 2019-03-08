@@ -8,7 +8,7 @@ Walter Pitts 的关于人类神经活动的模拟的研究提出并发展而来�
 下面对其原理进行介绍。
 
 \begin{figure}[h]
-	\includegraphics{perceptron.png}
+	\includegraphics{perceptron.pdf}
 	\caption{感知器模型}
 	\label{perceptron}
 \end{figure}
@@ -39,15 +39,15 @@ output = \left\{ \begin{array} { l l } { 0 } & { \text { if } \sum _ { j } w _ {
 
 通过设置不同的权重和门限，可得到不同的决策模型。比如将门限值降低可增加外出游玩的可能性，将是否有同伴陪同的权重提高可增加同伴对外出游玩与否的影响程度。
 
-显然以上的感知器模型并不能完全体现人类决策的复杂性而只是一个简单的示例。通过堆叠多层感知器，可得到做出更加微妙决策的感知器网络：
+显然以上的感知器模型并不能完全体现人类决策的复杂性而只是一个简单的示例。通过堆叠多层感知器，可得到做出更加微妙决策的感知器网络。
 
 \begin{figure}[h]
-	\includegraphics{layeredperceptron.png}
+	\includegraphics{layeredperceptron.pdf}
 	\caption{多层感知器模型}
 	\label{layeredperceptron}
 \end{figure}
 
-如图xx，第一层感知器一共做出三项简单决策，这三项决策又接着输入到第二层的四个感知器得出四个更进一步的决策，最后这四个决策又输入到最后一个感知器得到
+如图\ref{layeredperceptron}，第一层感知器一共做出三项简单决策，这三项决策又接着输入到第二层的两个感知器得出两个更进一步的决策，最后这两个决策又输入到最后一个感知器得到
 最后的决策。这种级联方式可以让后面的感知器得出比前面的感知器更抽象的结果，从而解决更加复杂的决策问题。
 
 通过引入“偏置（bias）”$b$，公式\ref{eqn:perceptron}也可以改写为公式\ref{eqn:perceptronbias}:
@@ -72,9 +72,18 @@ output = \left\{ \begin{array} { l l } { 0 } & { \text { if } w \cdot x + b \leq
 	\label{eqn:sigmoidoutput}
 	\frac { 1 } { 1 + \exp \left( - \sum _ { j } w _ { j } x _ { j } - b \right) }
 \end{equation}
-从图xx可以看出，本质上 sigmoid 函数是阶跃函数的平滑版本，这也说明了为什么 sigmoid 激活函数的引入可以解决输出剧烈变化的问题。
+从图\ref{sigmoid_step}可以看出，本质上 sigmoid 函数是阶跃函数的平滑版本，这也说明了为什么 sigmoid 激活函数的引入可以解决输出剧烈变化的问题。
 
-//sigmoid 阶跃函数对比
+\begin{figure}[htbp]
+	\subfigure[]{
+		\label{sigmoid}
+		\includegraphics{sigmoid.pdf}}
+	\subfigure[]{
+		\label{step}
+		\includegraphics{step.pdf}}
+	\caption{Sigmoid 与阶跃函数对比图}
+	\label{sigmoid_step}
+\end{figure}
 
 $\sigma$ 函数的重要性在于其平滑性，而与其具体的形状并没有太大的关系，$\sigma$ 的平滑度意味着权重中的微小变化
 $\Delta w_j$ 和偏置中的 $\Delta w_j$ 将在神经元的输出中产生小的变化 $\Delta output$。
@@ -91,10 +100,13 @@ $\sigma$ 函数并不是唯一的激活函数形式，常用的激活函数还�
 \end{equation}
 
 函数图像是：
+\begin{figure}[htbp]
+	\includegraphics{relu.pdf}
+	\caption{ReLU 激活函数图像}
+	\label{relu}
+\end{figure}
 
-//图：relu曲线图
-
-从公式和图可以观察到 ReLU 函数把所有的负值都变为0，而正值线性变化，这种操作叫做单侧抑制。
+从公式\ref{eqn:relu}和图\ref{relu}可以观察到 ReLU 函数把所有的负值都变为0，而正值线性变化，这种操作叫做单侧抑制。
 尤其体现在深度神经网络模型(如CNN)中，当模型增加N层之后，理论上 ReLU 神经元的激活率将降低2的N次方倍。
 相对于 sigmoid 函数，ReLU 能更好地实现网络模型的稀疏性，同时也符合近年来神经科学对神经元工作稀疏性的研究【引用】，同时 ReLu 在
 正区间梯度总是为定值的特性也有利于避免梯度消失问题。
@@ -104,9 +116,13 @@ $\sigma$ 函数并不是唯一的激活函数形式，常用的激活函数还�
 想化实现，功能更加简单。要想模仿人类的神经系统的推理运算功能，需要多个人工神经的协调配合实现高阶的抽象能力
 并完成复杂的功能。通过特定的连接或信息传递方式进行配合的神经元可以看作是一个网络，我们称之为人工神经网络。
 
-//图 神经网络结构（输入层，隐含层，输出层）
+\begin{figure}[htbp]
+	\includegraphics{ann_structure.pdf}
+	\caption{神经网络一般结构}
+	\label{ann_structure}
+\end{figure}
 
-图xxx给出了人工神经网络的一般结构。人工神经网络一般由多层感知器级联而成。第一层感知器，也就是图中的最左边那层称为
+图\ref{ann_structure}给出了人工神经网络的一般结构。人工神经网络一般由多层感知器级联而成。第一层感知器，也就是图中的最左边那层称为
 输入层，它的作用是将输入数据传递到网络中。最后一层感知器被称为输出层，也就是图中的最右那层，用来得到网络的计算结果。
 而输入层和输出层之间的各层统称为隐含层（hidden layer），隐含的意思是这些神经元处于神经网络内部，不与外部直接进行
 信息交换。上图中的隐含层层数为 2，不过隐含层的层数也可以是任意正整数。历史上这类简单的多层神经网络也被成为多层感知机
@@ -117,7 +133,11 @@ $\sigma$ 函数并不是唯一的激活函数形式，常用的激活函数还�
 网络结构统称为循环神经网络（recurrent neural networks）。循环神经网络在时序信号的处理，如语音识别领域，取得了良好
 的效果。
 
-//占位，RNN图片
+\begin{figure}[htbp]
+	\includegraphics{rnn_structure.pdf}
+	\caption{循环神经网络}
+	\label{rnn_structure}
+\end{figure}
 
 前馈神经网络是应用最广泛的神经网络模型，性能良好，也比较易于实现与调参，本文后面章节在处理探地雷达信号目标识别问题
 时使用的卷积神经网络也属于前馈神经网络的一种。
@@ -166,12 +186,25 @@ $\mathbf { z } ^ { ( l ) } \in \mathbb { R } ^ { m ^ { l } }$ 表示$l$层神经
 你和任意的连续非线性函数。这说明神经网络具有通用近似能力，这也是用神经网络来解决机器学习问题的理论基础。
 
 对于分类问题，还需要将 $\phi$ 函数作为某种分类器的输入，从而得到每种类别的概率。
-\begin { equation } 
+\begin{equation} 
 \hat{y}=g(\varphi(\mathbf{x}), \theta)
- \end { equation }
+\end{equation}
 其中，$\hat{y}$ 为每类的概率输出，$\theta$ 为分类器的参数，$g$ 为分类器。
 
-对于多分类问题，常用的分类器为 Softmax 分类器。
+对于多分类问题，常用的分类器为 Softmax 分类器。对于具有$N$个分类的多分类问题，式\ref{eqn:softmax}给出了 softmax 函数的定义。softmax 函数可以
+将一组 $\phi$ 给出的输出转化为一组总和为1的概率，并且不影响转化前的大小相对关系。通过分类器的归一化之后的概率输出便可得出最可能的预测，因此分类器
+基本上位于网络的最后一层。
+\begin{equation} 
+\label{eqn:softmax}
+\operatorname{softmax}\left(s_{i}\right)=\frac{e^{s_{i}}}{\sum_{j=1}^{N} e^{s_{j}}} \quad(i=1, \cdots, N)
+\end{equation}
+
+上面说明了数据在前馈神经网络中正向传播的过程。为了使神经网络得到可靠的预测结果，需要对网络的参数，包括各层的权值和偏置，进行训练。训练一般采用
+梯度下降算法，梯度下降时需要一个评估模型预测性能的损失函数。损失函数一般由模型预测结构和真实结构的交叉熵计算得出。对于交叉熵
+\begin{equation}
+\label{eqn:cross_entrophy} 
+\mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})=-\mathbf{y}^{\mathrm{T}} \log \hat{\mathbf{y}}
+ \end{equation}
 
 \section{卷积神经网络}
 上节所述传统的前馈神经网络一般采用全连接结构，即每层所有神经元的输出都与下层的每一个神经元相连，也就是每一个连接都尤其对应的权重参数。
@@ -198,15 +231,17 @@ $\mathbf { z } ^ { ( l ) } \in \mathbb { R } ^ { m ^ { l } }$ 表示$l$层神经
 
 【局部感受野】
 
-前面所述全连接前馈神经网络中，输入数据是一维的列向量。在卷积神经网络中输入是以多维的形式组织的，例如下图：
-
-//卷积神经网络输入数据图
+前面所述全连接前馈神经网络中，输入数据是一维的列向量。在卷积神经网络中输入是以多维的形式组织的.
 
 和前面的网络类似，输入层数据也要连接到隐含层的神经元上，不过在卷积神经网络中，我们不会将每个输入都连接到每一个隐含层神经元上。
 反之我们只会连接一小部分局部的输入数据。更精确地说，第一个隐含层的每一个神经元都会连接到输入神经元的一小块区域，比如说一个5x5
-尺寸的正方形区域（共25个输入数据）。这种连接方式可由下图//引用来说明：
+尺寸的正方形区域（共25个输入数据）。这种连接方式可由图\ref{perception_filed}来说明（图中没有画出所有的输入神经元到隐含层神经元的连接）。
 
-//卷积神经网络连接方式图
+\begin{figure}[htbp]
+	\includegraphics{perception_field.pdf}
+	\caption{卷积层连接方式}
+	\label{perception_filed}
+\end{figure}
 
 上述正方形区域被称为隐含神经元的局部感受野。局部感受野可看成作用在输入数据上一个窗。每一个从局部感受野到对应隐含神经元的连接都包含一个
 权重，另外这个对应的隐含神经元本身也会有一个偏置参量。
@@ -218,31 +253,48 @@ $\mathbf { z } ^ { ( l ) } \in \mathbb { R } ^ { m ^ { l } }$ 表示$l$层神经
 上面提到局部感受野到隐含神经元的每一个连接都包含一个权重，此权重可以由一个矩阵$\mathbf{w}$来表示，这个矩阵的尺寸与局部感受野的尺寸相同。
 但是在这里有一个值得注意的地方，即对于卷积神经网络从输入层到隐含层的每一个权重矩阵都是共享的。权重共享的目的是解决局部特征的学习问题，
 因为权重共享之后，在二维数据某一位置学习到的特征也可应用到二维数据的其他位置。应用权重共享之后，对于位置为$j$,$k$的隐含层神经元，其输出是：
-\begin { equation } 
+\begin{equation} 
 \label{eqn:cnn_hidden_neuron}
 f\left(b+\sum_{l=0}^{k} \sum_{m=0}^{k} w_{l, m} a_{j+l, k+m}\right)
- \end { equation }
+\end{equation}
 其中，$f$ 是激活函数，$b$ 是共享的偏置，$w_{l,m}$ 是共享的权重矩阵，$a_{j+l,k+m}$ 是对应的感受野输入，$k$ 是感受野尺寸。同时这里还要指出，
-式\\引用中的求和部分可能看成是一个二维卷积的过程，这也就是卷积神经网络名称的由来。
+式\ref{eqn:cnn_hidden_neuron}中的求和部分可能看成是一个二维卷积的过程，这也就是卷积神经网络名称的由来。
 
 从输入层到隐含层的映射被称为特征映射，即此映射包含了从输入数据中学习到的一般特征。在卷积神经网络术语中，共享的权重矩阵
 $\mathbf{w}$和偏置$b$又被称为“核”或者“滤波器”。一般情况下，单个特征映射无法满足抽象出数据中足够多二维特征的要求。
 所以在实际应用中，输入层可以映射到多个并列的隐含层，其中每一个隐含层都对应一个独立的特征映射及滤波器。
 
-【汇聚层】
+【子采样】
 
 上面包含卷积运算的隐含层叫做卷积层。除了卷积层，卷积神经网络中还包含汇聚层（pooling layer）。汇聚层的作用是对卷积层输出的数据做
 简化，也就是子采样，它通常紧接着卷积层使用。汇聚层将隐含层的输出结果矩阵划分成一批重叠或者不重叠的区域，然后对每个区域应用汇聚函数
 得到一个单个的值，这样做实质上就是把隐含层的输出结果尺寸减小，即子采样的过程。常用的汇聚函数有最大汇聚和平均汇聚两种，分别可以表示为
 \ref{eqn:max_pooling} 与 \ref{eqn:mean_pooling}。
-\begin { equation }
+\begin{equation}
 \label{eqn:max_pooling} 
 Y_{m, n}^{d}=\max _{i \in R_{m, n}^{d}} x_{i}
- \end { equation }
- \begin { equation } 
- \label{eqn:mean_pooling}
+\end{equation}
+\begin{equation} 
+\label{eqn:mean_pooling}
 Y_{m, n}^{d}=\frac{1}{\left|R_{m, n}^{d}\right|} \sum_{i \in R_{m, n}^{d}} x_{i}
- \end { equation }
+\end{equation}
+使用汇聚层之后，可以在大大减少神经元的数量的同时使神经网络对于一些微小细节的改变保持不敏感性，避免过拟合的发生。
+
+如图\ref{cnn_structure}所示，卷积层、汇聚层和全连接层一起构成一个典型的卷积神经网络。一个卷积块为连续M 个卷积层和b个汇聚层（M
+通常设置为 2 $\sim$ 5， b为 0或 1）。一个卷积网络中可以堆叠 $N$ 个连续的卷积块，
+然后在接着 K 个全连接层（$N$ 的取值区间比较大，比如 1 $\sim$ 100或者更大；$K$
+一般为0 ~ 2）。
+\begin{figure}[h]
+	\includegraphics{cnn_structure.pdf}
+	\caption{卷积神经网络结构示意图}
+	\label{cnn_structure}
+\end{figure}
+
+按照图\ref{cnn_structure}给出的连接方式，结合实际问题的特点，不断增加网络的层数，达到足够提取出数据中的抽象特征进行高准确度预测
+的效果，这样的网络被称为深度卷积网络。由于深度卷积网络可以利用数据的二维结构，而且所需要训练的参数相对来说更少，因此它是目前深度
+学习领域中应用较为广泛的网络结构。
+
+
 
 \subsection{空间基函数}
 RWG 基函数是定义在三角形单元上的最具代表性的基函数。它的具体定义如
