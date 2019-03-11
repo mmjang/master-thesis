@@ -1,37 +1,51 @@
-\chapter{时域积分方程数值方法研究}
-\section{时域积分方程时间步进算法的阻抗元素精确计算}
-时域积分方程时间步进算法的阻抗元素直接影响算法的后时稳定性，因此阻抗元素的计算是算法的关键之一，采用精度高效的方法计算时域阻抗元素是时域积分方程时间步进算法研究的重点之一。
+\chapter{地下探测FDTD仿真技术研究}
+\section{天线模型仿真}
+\subsection{FDTD天线模型原理}
+\subsection{仿真实例}
+\section{拟真土壤模型}
+\subsection{拟真土壤模型原理}
+Peplinski 等人提出一种模拟真实土壤电磁特性的半经验模型。在此模型中，土壤由三种成分构成，分别是：
+颗粒直径在0.05mm到2.0mm之间的沙土，颗粒直径在0.002mm到0.05mm之间的粉土，以及颗粒直径在0.002
+以下的粘土。这三种成分的配比不同可表示不同的土壤类型，进而也影响到其电磁特性。同时，土壤中含水量也对
+其电磁特性起重大影响。综合这些因素，土壤的复介电常数$\epsilon_m$由式\ref{eqn:peplinskiall}给出。
+\begin{equation} 
+	\label{eqn:peplinskiall} 
+	\begin{aligned} \epsilon_{m} &=\epsilon_{m}^{\prime}-j \epsilon_{m}^{\prime \prime} \\ 
+\epsilon_{m}^{\prime} &=1.15 \left[1+\frac{\rho_{b}}{\rho_{s}}\left(\epsilon_{s}^{\alpha}\right)+m_{v}^{\beta^{\prime}} \epsilon_{f w}^{\alpha}-m_{v}\right]^{1 / \alpha} - 0.68\\ 
+\epsilon_{m}^{\prime \prime} &=\left[m_{v}^{\beta^{\prime \prime}} \epsilon_{f w}^{\prime \prime \alpha}\right]^{1 / \alpha} \end{aligned}
+\end{equation}
 
-% \section{时域积分方程时间步进算法阻抗矩阵的存储}
-% 时域阻抗元素的存储技术也是时间步进算法并行化的关键技术之一，采用合适的阻抗元素存储方式可以很大的提高并行时间步进算法的计算效率。
+上式中，$\epsilon_{m}^{\prime}$ 与 $\epsilon_{m}^{\prime}$分别是复介电常数
+$\epsilon_m$的实部与虚部；$\rho_{b}$ 与 $\rho_{s}$分别是土壤的总密度和其中沙土成分
+的密度（单位：$g/cm^3$）;$\beta^\prime$与$\beta^{\prime \prime}$分别是与土壤构成
+相关的常数，其表达式为\ref{eqn:soil_beta}，其中$S$与$C$分别是沙土与粘土的构成比例
+（$0<S<1, 0<C<1$）。
+\begin{equation} 
+	\label{eqn:soil_beta}
+	\begin{aligned}
+\beta^{\prime}&=1.2748-0.519 S-0.152 C \\
+\beta^{\prime \prime}&=1.33797-0.603 S-0.166 C
+	\end{aligned}
+\end{equation}
 
-\subsection{时域积分方程时间步进算法产生的阻抗矩阵的特征}
-由于时域混合场积分方程是时域电场积分方程与时域磁场积分方程的线性组合，因此时域混合场积分方程时间步进算法的阻抗矩阵特征与时域电场积分方程时间步进算法的阻抗矩阵特征相同。
-
-\subsection{数值算例与分析}
-
-如图3-1(a)所示给出了时间步长选取为0.5ns时采用三种不同存储方式计算的平板中心处 方向的感应电流值与IDFT方法计算结果的比较。如图3-1(b)所示给出了存储方式为基权函数压缩存储方式，时间步长分别取时平板中心处 方向的感应电流计算结果，从图中可以看出不同时间步长的计算结果基本相同。
-
-\begin{algorithm}[H]
-	\KwData{this text}
-	\KwResult{how to write algorithm with \LaTeX2e }
-	initialization\;
-	\While{not at end of this document}{
-		read current\;
-		\eIf{understand}{
-			go to next section\;
-			current section becomes this one\;
-		}{
-		go back to the beginning of current section\;
-	}
-}
-\caption{How to wirte an algorithm.}
-\end{algorithm}
-
-由于时域混合场积分方程是时域电场积分方程与时域磁场积分方程的线性组合，因此时域混合场积分方程时间步进算法的阻抗矩阵特征与时域电场积分方程时间步进算法的阻抗矩阵特征相同。
-
-\section{时域积分方程时间步进算法矩阵方程的求解}
-
+式\ref{eqn:peplinskiall}中$\epsilon_{f w}^{\prime}$与$\epsilon_{f w}^{\prime \prime}$
+分别是土壤中自由水的实部与虚部，其表达式由式\ref{eqn:soil_water}给出。
+\begin{equation} 
+	\label{eqn:soil_water}
+	\begin{aligned}
+		\epsilon_{f w}^{\prime}&=\epsilon_{w \infty}+\frac{\epsilon_{w 0}-\epsilon_{w \infty}}{1+\left(2 \pi f \tau_{w}\right)^{2}} \\
+		\epsilon_{f w}^{\prime \prime}&=\frac{2 \pi f \tau_{w}\left(\epsilon_{w 0}-\epsilon_{w \infty}\right)}{1+\left(2 \pi f \tau_{w}\right)^{2}}+\frac{\sigma_{\mathrm{eff}}}{2 \pi \epsilon_{0} f} \frac{\left(\rho_{s}-\rho_{b}\right)}{\rho_{s} m_{v}}
+	\end{aligned}
+\end{equation}
+其中，$\epsilon_{w \infty}$是$\epsilon_{f w}^{\prime}$在高频时的极限；$\tau_{w}$为自由水的
+弛豫时间常数；$\epsilon_{w 0}$为水的静态相对介电常数，其值为80.1；$\sigma_{\mathrm{eff}}$为有效电导率
+，由经验公式\ref{eqn:soil_eff}给出。
+\begin{equation}
+	\label{eqn:soil_eff}
+\sigma_{\mathrm{eff}}=0.0467+0.2204 \rho_{b}-0.4111 S+0.6614 C
+\end{equation}
+\subsection{建模实例}
+\section{B 扫数据的批量生成}
 \section{本章小结}
 本章首先研究了时域积分方程时间步进算法的阻抗元素精确计算技术，分别采用DUFFY变换法与卷积积分精度计算法计算时域阻抗元素，通过算例验证了计算方法的高精度。
 

@@ -200,11 +200,34 @@ $\mathbf { z } ^ { ( l ) } \in \mathbb { R } ^ { m ^ { l } }$ 表示$l$层神经
 \end{equation}
 
 上面说明了数据在前馈神经网络中正向传播的过程。为了使神经网络得到可靠的预测结果，需要对网络的参数，包括各层的权值和偏置，进行训练。训练一般采用
-梯度下降算法，梯度下降时需要一个评估模型预测性能的损失函数。损失函数一般由模型预测结构和真实结构的交叉熵计算得出。对于交叉熵
+梯度下降算法，梯度下降时需要一个评估模型预测性能的损失函数。损失函数一般由模型预测结构和真实结构的交叉熵计算得出。交叉熵由式\ref{eqn:cross_entrophy}定义。
 \begin{equation}
 \label{eqn:cross_entrophy} 
 \mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})=-\mathbf{y}^{\mathrm{T}} \log \hat{\mathbf{y}}
  \end{equation}
+其中$\mathbf{y}$与$\hat{\mathbf{y}}$分别表示实际标签与预测结果。
+
+在交叉熵的基础上还可以定义风险函数：
+\begin{equation} 
+\mathcal{R}(W, \mathbf{b})=\frac{1}{N} \sum_{n=1}^{N} \mathcal{L}\left(\mathbf{y}^{(n)}, \hat{\mathbf{y}}^{(n)}\right)+\frac{1}{2} \lambda\|W\|_{F}^{2}
+\end{equation}
+\begin{equation} 
+=\frac{1}{N} \sum_{n=1}^{N} \mathcal{L}\left(\mathbf{y}^{(n)}, \hat{\mathbf{y}}^{(n)}\right)+\frac{1}{2} \lambda\|W\|_{F}^{2}
+\end{equation}
+其中$\mathbf{W}$和$\mathbf{b}$分别表示网络中的权重和偏置；其中$\|W\|_{F}^{2}$为了防止过拟合现象而引入的正则化项；$\lambda$是为正数的参数。
+这里的正则化项一般由Frobenius范数（式\ref{eqn:frobenius}）给出：
+\begin{equation} 
+\label{eqn:frobenius}
+\|W\|_{F}^{2}=\sum_{l=1}^{L} \sum_{i=1}^{m^{(l)}} \sum_{j=1}^{(l-1)}\left(W_{i j}^{(l)}\right)^{2}
+\end{equation}
+
+对模型的训练过程即调整模型参数使得风险函数最小的过程。按照梯度下降原理，每次迭代过程中第$l$层
+的参数更新公式为：
+\begin{equation} 
+\begin{aligned} W^{(l)} & \leftarrow W^{(l)}-\alpha \frac{\partial \mathcal{R}(W, \mathbf{b})}{\partial W^{(l)}} \\ &=W^{(l)}-\alpha\left(\frac{1}{N} \sum_{n=1}^{N}\left(\frac{\partial \mathcal{L}\left(\mathbf{y}^{(n)}, \hat{\mathbf{y}}^{(n)}\right)}{\partial W^{(l)}}\right)+\lambda W^{(l)}\right) \\ \mathbf{b}^{(l)} & \leftarrow \mathbf{b}^{(l)}-\alpha \frac{\partial \mathcal{R}(W, \mathbf{b})}{\partial \mathbf{b}^{(l)}} \\ &=\mathbf{b}^{(l)}-\alpha\left(\frac{1}{N} \sum_{n=1}^{N} \frac{\partial \mathcal{L}\left(\mathbf{y}^{(n)}, \hat{\mathbf{y}}^{(n)}\right)}{\partial \mathbf{b}^{(l)}}\right) \end{aligned}
+\end{equation}
+式中的$\alpha$代表学习率。
+
 
 \section{卷积神经网络}
 上节所述传统的前馈神经网络一般采用全连接结构，即每层所有神经元的输出都与下层的每一个神经元相连，也就是每一个连接都尤其对应的权重参数。
@@ -294,99 +317,5 @@ Y_{m, n}^{d}=\frac{1}{\left|R_{m, n}^{d}\right|} \sum_{i \in R_{m, n}^{d}} x_{i}
 的效果，这样的网络被称为深度卷积网络。由于深度卷积网络可以利用数据的二维结构，而且所需要训练的参数相对来说更少，因此它是目前深度
 学习领域中应用较为广泛的网络结构。
 
-
-
-\subsection{空间基函数}
-RWG 基函数是定义在三角形单元上的最具代表性的基函数。它的具体定义如
-下：
-\begin{equation}
-f_n(r)=
-\begin{cases}
-\frac{l_n}{2A_n^+}\rho_n^+=\frac{l_n}{2A_n^+}(r-r_+)&r\in T_n^+\\
-\frac{l_n}{2A_n^-}\rho_n^-=\frac{l_n}{2A_n^-}(r_--r)&r\in T_n^-\\
-0&\text{otherwise}
-\end{cases}
-\end{equation}
-
-其中，$l_n$为三角形单元$T_n^+$和$T_n^-$公共边的长度，$A_n^+$和$A_n^-$分别为三角形单元$T_n^+$和$T_n^-$的面积（如图\ref{pica}所示）。
-
-\begin{figure}[h]
-	\includegraphics{pica.pdf}
-	\caption{RWG 基函数几何参数示意图}
-	\label{pica}
-\end{figure}
-由于时域混合场积分方程是时域电场积分方程与时域磁场积分方程的线性组合，因此时域混合场积分方程时间步进算法的阻抗矩阵特征与时域电场积分方程时间步进算法的阻抗矩阵特征相同。
-\begin{equation}
-\label{latent_binary_variable}
-\mathbf{r}_{i,j}=
-\begin{cases}
-1,f(\mathbf{x}^{i};\mathbf{w})\cdot f(\mathbf{x}^{j};\mathbf{w})\geq u(\lambda),\\
-0,f(\mathbf{x}^{i};\mathbf{w})\cdot f(\mathbf{x}^{j};\mathbf{w})< l(\lambda), 1\leq i,j\leq n.\\
-f(\mathbf{x}^{i};\mathbf{w})\cdot f(\mathbf{x}^{j};\mathbf{w}),\text{otherwise},
-\end{cases}
-\end{equation}
-
-时域积分方程时间步进算法的阻抗元素直接影响算法的后时稳定性，因此阻抗元素的计算是算法的关键之一，采用精度高效的方法计算时域阻抗元素是时域积分方程时间步进算法研究的重点之一。
-
-
-\subsection{时间基函数}
-
-\subsubsection{时域方法特有的展开函数}
-
-\subsubsection{频域方法特有的展开函数}
-
-\section{入射波}
-
-如图\ref{picb}和图\ref{picc}所示分别给出了参数$E_0=\hat{x}$，$a_n=-\hat{z}$，$f_0=250MHz$，$f_w=50MHz$，$t_w=4.2\sigma$时，调制高斯脉冲的时域与频域归一化波形图。
-
-\begin{figure}[h]
-	\subfigure[]{
-		\label{picb}
-		\includegraphics[width=7.3cm]{picb.pdf}}
-	\subfigure[]{
-		\label{picc}
-		\includegraphics[width=6.41cm]{picc.pdf}}
-	\caption{调制高斯脉冲时域与频率波形，时域阻抗元素的存储技术也是时间步进算法并行化的关键技术之一，采用合适的阻抗元素存储方式可以很大的提高并行时间步进算法的计算效率。}
-	\label{fig1}
-\end{figure}
-时域阻抗元素的存储技术\citing{xiao2012yi}也是时间步进算法并行化的关键技术之一，采用合适的阻抗元素存储方式可以很大的提高并行时间步进算法的计算效率。
-
 \section{本章小结}
-本章首先从时域麦克斯韦方程组出发推导得到了时域电场、磁场以及混合场积分方程。
 
-\chapter{时域积分方程数值方法研究}
-\section{时域积分方程时间步进算法的阻抗元素精确计算}
-时域积分方程时间步进算法的阻抗元素直接影响算法的后时稳定性，因此阻抗元素的计算是算法的关键之一，采用精度高效的方法计算时域阻抗元素是时域积分方程时间步进算法研究的重点之一。
-
-\section{时域积分方程时间步进算法阻抗矩阵的存储}
-时域阻抗元素的存储技术也是时间步进算法并行化的关键技术之一，采用合适的阻抗元素存储方式可以很大的提高并行时间步进算法的计算效率。
-
-\subsection{时域积分方程时间步进算法产生的阻抗矩阵的特征}
-由于时域混合场积分方程是时域电场积分方程与时域磁场积分方程的线性组合，因此时域混合场积分方程时间步进算法的阻抗矩阵特征与时域电场积分方程时间步进算法的阻抗矩阵特征相同。
-
-\subsection{数值算例与分析}
-
-如图3-1(a)所示给出了时间步长选取为0.5ns时采用三种不同存储方式计算的平板中心处 方向的感应电流值与IDFT方法计算结果的比较。如图3-1(b)所示给出了存储方式为基权函数压缩存储方式，时间步长分别取时平板中心处 方向的感应电流计算结果，从图中可以看出不同时间步长的计算结果基本相同。
-
-\begin{algorithm}[H]
-	\KwData{this text}
-	\KwResult{how to write algorithm with \LaTeX2e }
-	initialization\;
-	\While{not at end of this document}{
-		read current\;
-		\eIf{understand}{
-			go to next section\;
-			current section becomes this one\;
-		}{
-		go back to the beginning of current section\;
-	}
-}
-\caption{How to wirte an algorithm.}
-\end{algorithm}
-
-由于时域混合场积分方程是时域电场积分方程与时域磁场积分方程的线性组合，因此时域混合场积分方程时间步进算法的阻抗矩阵特征与时域电场积分方程时间步进算法的阻抗矩阵特征相同。
-
-\section{时域积分方程时间步进算法矩阵方程的求解}
-
-\section{本章小结}
-本章首先研究了时域积分方程时间步进算法的阻抗元素精确计算技术，分别采用DUFFY变换法与卷积积分精度计算法计算时域阻抗元素，通过算例验证了计算方法的高精度。
