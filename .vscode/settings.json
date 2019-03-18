@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "C:\\Users\\liaob\\AppData\\Local\\Programs\\Python\\Python35\\python.exe"
+    "python.pythonPath": "C:\\Users\\liaob\\Miniconda3\\envs\\gprMax\\python.exe",
+    "python.linting.pylintEnabled": true
 }

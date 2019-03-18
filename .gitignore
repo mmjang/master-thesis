@@ -12,5 +12,5 @@
 *.xdv
 *.synctex.gz
 !./example.pdf
-
+.vscode
 .DS_Store
