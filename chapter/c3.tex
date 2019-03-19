@@ -222,11 +222,20 @@ $k$，分形维数为$D$：
 3. 设$\mathbf{A}$的中心点的坐标为$(i_c,j_c)$，对于每一个数据点$\mathbf{A}(i,j)$
 ，计算其与中心点的模，即$L=\sqrt{(i - i_c)^2 + (j - j_c)^2}$。
 
-4. 应用公式 $\mathbf{A}(i,j) = \mathbf{A}(i,j) \frac{1}{L^{\frac{-(2 D-7)}{2}}}$。
+4. 应用公式 
+\begin{equation}
+	\label{eqn:fractal_2d}
+	\mathbf{A}(i,j) = \mathbf{A}(i,j) \frac{1}{L^{\frac{-(2 D-7)}{2}}}
+\end{equation}
 
 5. 对$\mathbf{A}$进行逆傅里叶变换，将所得结果归一化到$[-k,k]$范围内，此时$\mathbf{A}$即代表
 土壤区域顶部对应的起伏程度，将此起伏程度数据应用于建模过程便可得到具有起伏表面的土壤模型。
 \subsection{建模实例}
+为了方便展示计算过程，这里对土壤起伏表面的生成过程做建模演示。图\ref{rough_surface}展示了上述土壤分形生成算法
+中各步骤的计算结果，其中第一步中$x$和$y$的值皆为400，分形维数$D=400$。图\ref{rough_surface}(a)为原始随机矩阵，
+在经过傅里叶变换后变为图\ref{rough_surface}(b)，频域数据经过公式\ref{eqn:fractal_2d}处理后能量集中到
+低频区域，这一点可在图\ref{rough_surface}(c)看出来，其中能量由图中心的低频部分像周围的高频区域逐渐下降（图中的
+颜色以对数尺度标出）。最后，如图\ref{rough_surface}{d}所示，恢复到时域的数据呈现类似于地形起伏的分形特征。
 \begin{figure}[htbp]
 	\subfigure[]{
 		\label{rough_surface_a}
@@ -241,14 +250,22 @@ $k$，分形维数为$D$：
 		\label{rough_surface_d}
 		\includegraphics{rough_surface_fractal.pdf}
 	}
-	\caption{土壤起伏表面建模实例二维图}
+	\caption{土壤起伏表面建模实例二维图。(a)随机二维数据；(b)随机数据的二维傅里叶变换；
+	(c)应用公式\ref{eqn:fractal_2d}后的结果；(d)最后生成的土壤起伏数据}
 	\label{rough_surface}
 \end{figure}
 
+直观起见，图\ref{rough_surface_3d}给出了\ref{rough_surface}(d)中数据的三维曲面图。设该曲面所代表的数据为
+$\mathbf{A}_{fractal}$，且其最大值为$A_{max}$最小值为$A_{min}$。在将该结果应用到FDTD建模之前需要对其值的范围进行调整，若指定模型中该土壤表面高度值的
+范围为$h_{min}$到$h_{max}$，则可根据下面的公式得出在FDTD模型中的实际表面高度。
+\begin{equation}
+	\mathbf{A}_{fractal} = \mathbf{A}_{fractal} \frac{h_{max} - h_{min}}{A_{max} - A_{min}} + 
+		h_{min} - (\frac{h_{max} - h_{min}}{A_{max} - A_{min}}) h_{min}
+\end{equation}
 \begin{figure}[htbp]
 	\includegraphics[]{rough_surface_fractal_3d.pdf}
-	\caption{土壤起伏表面建模实例三维图}
-	\label{rough_surface}
+	\caption[]{土壤起伏表面建模实例三维图}
+	\label{rough_surface_3d}
 \end{figure}
 \section{天线模型仿真}
 \subsection{FDTD天线模型原理}

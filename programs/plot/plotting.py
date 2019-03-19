@@ -1,6 +1,7 @@
 from matplotlib.font_manager import fontManager
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import rcParams
+from matplotlib.colors import LogNorm
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import fftpack
@@ -108,7 +109,7 @@ for i in range(surfacedims[0]):
         fractalsurface[i, j] = A[i, j] * 1 / (rr**b)
 
 plt.figure(figsize=(sub_figure_width, sub_figure_width))
-plt.imshow(np.real(fractalsurface), aspect='auto')
+plt.imshow(np.real(fractalsurface), aspect='auto', norm=LogNorm(vmin=0.01, vmax=1))
 plt.xlabel('x')
 plt.ylabel('y')
 #plt.imshow(fractalsurface, aspect='auto', cmap='Gray')
