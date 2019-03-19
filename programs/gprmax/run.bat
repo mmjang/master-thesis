@@ -1,0 +1,1 @@
+C:\Users\liaob\Miniconda3\envs\gprMax\python.exe -m gprMax peplinski.in --geometry-only

@@ -232,7 +232,7 @@ $k$，分形维数为$D$：
 土壤区域顶部对应的起伏程度，将此起伏程度数据应用于建模过程便可得到具有起伏表面的土壤模型。
 \subsection{建模实例}
 为了方便展示计算过程，这里对土壤起伏表面的生成过程做建模演示。图\ref{rough_surface}展示了上述土壤分形生成算法
-中各步骤的计算结果，其中第一步中$x$和$y$的值皆为400，分形维数$D=400$。图\ref{rough_surface}(a)为原始随机矩阵，
+中各步骤的计算结果，其中第一步中$x$和$y$的值皆为400，分形维数$D=1.5$。图\ref{rough_surface}(a)为原始随机矩阵，
 在经过傅里叶变换后变为图\ref{rough_surface}(b)，频域数据经过公式\ref{eqn:fractal_2d}处理后能量集中到
 低频区域，这一点可在图\ref{rough_surface}(c)看出来，其中能量由图中心的低频部分像周围的高频区域逐渐下降（图中的
 颜色以对数尺度标出）。最后，如图\ref{rough_surface}{d}所示，恢复到时域的数据呈现类似于地形起伏的分形特征。
@@ -266,6 +266,15 @@ $\mathbf{A}_{fractal}$，且其最大值为$A_{max}$最小值为$A_{min}$。在�
 	\includegraphics[]{rough_surface_fractal_3d.pdf}
 	\caption[]{土壤起伏表面建模实例三维图}
 	\label{rough_surface_3d}
+\end{figure}
+
+按照前述类似的过程也可以建立前述土壤介质分布模型，将此模型与起伏表面模型结合起来便得到完整的拟真土壤模型（图\ref{soil_model_3d}）。
+
+
+\begin{figure}[htbp]
+	\includegraphics[width=0.8\textwidth]{soil_model_3d.png}
+	\caption{拟真土壤模型建模示例}
+	\label{soil_model_3d}
 \end{figure}
 \section{天线模型仿真}
 \subsection{FDTD天线模型原理}
