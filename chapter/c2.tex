@@ -1,5 +1,13 @@
 \chapter{深度学习基础}
-深度学习概括介绍...
+人工智能这个学科底下的一个子学科叫做机器学习。机器学习主要是通过概率统计等方法让机器从大量已有数据中找到规律
+进而使用这些习得的联系在新数据上解决问题。这里解决的问题主要有分类和回归问题两类，其中分类问题的结果是离散的，
+主要是给出输入数据应该属于预先定义的哪个类别里，而回归问题的结果是连续，它的输出是关于数据特性的某个数值。机器学习
+在某些传统算法束手无策的问题上，比如手写识别，语音辨认等领域，取得令人可喜的效果。人工神经网络是最常用的实现
+学习的一类算法，其理论基础是利用神经元的数学模型来近似模仿生物体大脑处理信息的过程。人工神经网络本质上一种具有自学习
+能力的非线性建模工具。
+
+近年来使人工神经网络再度成为研究热点的一类算法叫做深度学习。其名称里的“深”表示相比于上世纪的人工神经网络
+，深度学习的网络层数大，结构复杂。深度学习现在几乎已经成为大型神经网络的代名词。
 
 本章主要介绍深度学习的理论基础，包括感知器、激活函数、反向传播算法、卷积神经网络等相关概念与理论。
 \section{感知器}
@@ -228,6 +236,130 @@ $\mathbf { z } ^ { ( l ) } \in \mathbb { R } ^ { m ^ { l } }$ 表示$l$层神经
 \end{equation}
 式中的$\alpha$代表学习率。
 
+使用梯度下降对神经网络参数进行优化时需要计算损失函数$\mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})$关于每个参数的导数。
+现在假设需要计算损失函数相对于$\mathbf{W}^{(l)}$和$\mathbf{b}^{(l)}$的偏导数。由于$\mathbf{W}^{(l)}$和$\mathbf{b}^{(l)}$
+都是矩阵，如果要计算微分的话十分繁琐，所以可以先计算矩阵中某个元素的偏导数。根据求导法则，可得
+\begin{equation} 
+	\label{eqn:partial_l_partial_w}
+	\frac{\partial \mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})}{\partial W_{i j}^{(l)}}=\left(\frac{\partial \mathbf{z}^{(l)}}{\partial W_{i j}^{(l)}}\right)^{\mathrm{T}} \frac{\partial \mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})}{\partial \mathbf{z}^{(l)}}
+ \end{equation}
+ \begin{equation}
+	\label{eqn:partial_l_partial_b} 
+ \frac{\partial \mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})}{\partial \mathbf{b}^{(l)}}=\left(\frac{\partial \mathbf{z}^{(l)}}{\partial \mathbf{b}^{(l)}}\right)^{\mathrm{T}} \frac{\partial \mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})}{\partial \mathbf{z}^{(l)}}
+  \end{equation}
+
+现在来计算$\frac{\partial \mathbf{z}^{(l)}}{\partial W_{i j}^{(l)}}$。
+$\mathbf{z}^{(l)}$和$\partial W_{i j}^{(l)}$存在函数关系 $\mathbf{z}^{(l)}=W^{(l)} \mathbf{a}^{(l-1)}+\mathbf{b}^{(l)}$，所以
+\begin{equation}
+	\begin{aligned} 
+\frac{\partial \mathbf{z}^{(l)}}{\partial W_{i j}^{(l)}}&=\frac{\partial\left(W^{(l)} \mathbf{a}^{(l-1)}+\mathbf{b}^{(l)}\right)}{\partial W_{i j}^{(l)}}\\
+&=\left[ \begin{array}{c}{\frac{\partial\left(W_{1 :}^{(l)} \mathbf{a}^{(l-1)}+\mathbf{b}^{(l)}\right)}{\partial W_{i j}^{(l)}}} \\
+ {\vdots} \\ 
+{\frac{\partial\left(W_{i :}^{(l)} \mathbf{a}^{(l-1)}+\mathbf{b}^{(l)}\right)}{\partial W_{i j}^{(l)}}} 
+\\{\vdots}\\ 
+{\frac{\partial\left(W_{m^{l}:}^{(l)} \mathbf{a}^{(l-1)}+\mathbf{b}^{(l)}\right)}
+{\partial W_{i j}^{(l)}}}\end{array}\right]=\left[ \begin{array}{c}0\\{\vdots}\\a_j^{l-1}\\{\vdots}\\0\end{array}\right]\\
+	&\triangleq \mathbb{I}_{i}\left(a_{j}^{(l-1)}\right)
+\end{aligned}
+\end{equation}
+其中$W_{i :}^{(l)}$代表$W^{(l)}$的第$i$行。$\mathbb{I}_{i}\left(a_{j}^{(l-1)}\right)$代表第$i$行的值为
+$a_{j}^{(l-1)}$的列向量。
+
+下面来计算偏导数$\frac{\partial \mathbf{z}^{(l)}}{\partial \mathbf{b}^{(l)}}$。带入函数关系
+$\mathbf{z}^{(l)}=W^{(l)} \mathbf{a}^{(l-1)}+\mathbf{b}^{(l)}$可得
+\begin{equation} 
+\frac{\partial \mathbf{z}^{(l)}}{\partial \mathbf{b}^{(l)}}=
+\frac{\partial (W^{(l)} \mathbf{a}^{(l-1)}+\mathbf{b}^{(l)})}{\partial \mathbf{b}^{(l)}}
+=\mathbf{I}_{m^{(l)}}
+ \end{equation}
+其中$\mathbf{I}_{m}(l)$为$m^{(l)}$阶单位矩阵。
+
+最后我们来计算 $\frac{\partial \mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})}{\partial \mathbf{z}^{(l)}}$。
+这个偏导项通常被称为误差项，用来表征某层神经元对网络最后总误差的影响，我们把第$l$层的误差项记作$\delta(l)$。
+
+根据$\mathbf{z}^{(l+1)}=W^{(l+1)} \mathbf{a}^{(l)}+\mathbf{b}^{(l+1)}$，对$\mathbf{a}$求导可得
+\begin{equation} 
+\frac{\partial \mathbf{z}^{(l+1)}}{\partial \mathbf{a}^{(l)}}=\left(W^{(l+1)}\right)^{\mathrm{T}}
+ \end{equation}
+
+用按位计算函数$f_{l}(\cdot)$表示$\mathbf{a}^{(l)}$可得
+\begin{equation} 
+\begin{aligned} \frac{\partial \mathbf{a}^{(l)}}{\partial \mathbf{z}^{(l)}} &=\frac{\partial f_{l}\left(\mathbf{z}^{(l)}\right)}{\partial \mathbf{z}^{(l)}} \\ &=\operatorname{diag}\left(f_{l}^{\prime}\left(\mathbf{z}^{(l)}\right)\right) \end{aligned}
+ \end{equation}
+
+根据求导法则，可得
+\begin{equation} 
+\label{eqn:back_propagation}
+\begin{aligned} \delta^{(l)} & \triangleq \frac{\partial \mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})}{\partial \mathbf{z}^{(l)}} \\ 
+&=\frac{\partial \mathbf{a}^{(l)}}{\partial \mathbf{z}^{(l)}} \cdot \frac{\partial \mathbf{z}^{(l+1)}}{\partial \mathbf{a}^{(l+1)}} \cdot \frac{\partial \mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})}{\partial \mathbf{z}(l+1)} \\ 
+&=\operatorname{diag}\left(f_{l}^{\prime}\left(\mathbf{z}^{(l)}\right)\right) \cdot\left(W^{(l+1)}\right)^{\mathrm{T}} \cdot \delta^{(l+1)} \\ &=f_{l}^{\prime}\left(\mathbf{z}^{(l)}\right) \odot\left(\left(W^{(l+1)}\right)^{\mathrm{T}} \delta^{(l+1)}\right) \end{aligned}
+\end{equation}
+$\odot$是向量点积运算。
+
+从式\ref{eqn:back_propagation}可以看出，后一层（$l+1$层）的误差项决定了前一层（$l$层）的误差项，这种误差沿着网络向上一层传播的
+现象被称为反向传播。式\ref{eqn:back_propagation}的含义是后一层某个神经元的
+误差项是后一层与这个神经元连接相连的神经元的误差项的权重和再乘上该神经元激活函数的梯度。
+
+算得这三个偏导之后，公式\ref{eqn:partial_l_partial_w}可写成
+\begin{equation} 
+\frac{\partial \mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})}{\partial W_{i j}^{(l)}}=\mathbb{I}_{i}\left(a_{j}^{(l-1)}\right)^{\mathrm{T}} \delta^{(l)}=\delta_{i}^{(l)} a_{j}^{(l-1)}
+\end{equation}
+
+因此，损失函数关于第$l$层权重的梯度是：
+\begin{equation}
+\label{eqn:gradient_w} 
+\frac{\partial \mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})}{\partial W^{(l)}}=\delta^{(l)}\left(\mathbf{a}^{(l-1)}\right)^{\mathrm{T}}
+\end{equation}
+
+损失函数关于第$l$层偏置的梯度为：
+\begin{equation} 
+\label{eqn:gradient_b}
+\frac{\partial \mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})}{\partial \mathbf{b}^{(l)}}=\delta^{(l)}
+\end{equation}
+
+因此，基于梯度下降和反向传播的神经网络训练算法可以归纳为：
+
+1. 按从输入层到输出层的方向计算每一次的输入值$\mathbf{z^{(l)}}$和激活值$\mathbf{a^{(l)}}$； 
+
+2. 按从输出层到输入层的方向，即传播方向的反方向计算误差项$\delta^{(l)}$； 
+
+3. 按照式\ref{eqn:gradient_w}和式\ref{eqn:gradient_b}计算每层梯度，并根据梯度下降算法修改参数。
+
+上述过程也可用伪代码来描述：
+\begin{algorithm}[H]
+	\KwData{训练集$\mathcal{D}=\left\{\left(\mathbf{x}^{(n)}, y^{(n)}\right)\right\}_{n=1}^{N}$,
+	，验证集$\mathcal{V}$，学习率$\alpha$，正则化系数$\lambda$，
+	层数$L$，第$l$层神经元数量$m^{(l)}$}
+	随机初始化$W, \mathbf{b}$
+	\While{
+		错误率在验证集$\mathcal{V}$上持续下降
+	}{
+		随机打乱训练集中的样本;
+		\For{
+			$n = 1...N$
+		}{
+			选取训练样本($x^{(n)}, y^{(n)}$);
+
+			从前往后计算输入值$\mathbf{z^{(l)}}$和激活值$\mathbf{a^{(l)}}$；
+			
+			计算误差项$\delta^{(l)}$;
+			
+			//计算每层导数
+			
+			$\forall l, \quad \frac{\partial \mathcal{L}\left(\mathbf{y}^{(n)}, \hat{\mathbf{y}}^{(n)}\right)}{\partial W^{(l)}}=\delta^{(l)}\left(\mathbf{a}^{(l-1)}\right)^{\mathrm{T}}$;
+			
+			$\forall l, \quad \frac{\partial \mathcal{L}\left(\mathbf{y}^{(n)}, \hat{\mathbf{y}}^{(n)}\right)}{\partial \mathbf{b}^{(l)}}=\delta^{(l)}$;
+			
+			//更新参数
+			
+			$W^{(l)} \leftarrow W^{(l)}-\alpha\left(\delta^{(l)}\left(\mathbf{a}^{(l-1)}\right)^{\mathrm{T}}+\lambda W^{(l)}\right)$;
+			
+			$\mathbf{b}^{(l)} \leftarrow \mathbf{b}^{(l)}-\alpha \delta^{(l)}$;
+		}
+	}
+	\KwResult{权重和偏置$W,\mathbf{b}$}
+	\caption{如何训练前馈神经网络}
+   \end{algorithm}
 
 \section{卷积神经网络}
 上节所述传统的前馈神经网络一般采用全连接结构，即每层所有神经元的输出都与下层的每一个神经元相连，也就是每一个连接都尤其对应的权重参数。
@@ -249,7 +381,7 @@ $\mathbf { z } ^ { ( l ) } \in \mathbb { R } ^ { m ^ { l } }$ 表示$l$层神经
 配的刺激区域内的信号。在视觉神经系统中，视觉皮层中的神经细胞的输出依赖于视网膜上的光感受器。视网膜上的光感受器受刺激兴奋时，将神经冲动信
 号传到视觉皮层，但不是所有视觉皮层中的神经元都会接受这些信号。一个神经元的感受野是指视网膜上的特定区域，只有这个区域内的刺激才能够激活该
 神经元。
-
+ 
 应用到机器学习领域。卷积神经网络主要用到了三个基本思想：局部感受野、权值共享和子采样。下面分别对这三种思想作阐述。
 
 【局部感受野】
@@ -318,4 +450,14 @@ Y_{m, n}^{d}=\frac{1}{\left|R_{m, n}^{d}\right|} \sum_{i \in R_{m, n}^{d}} x_{i}
 学习领域中应用较为广泛的网络结构。
 
 \section{本章小结}
-
+二十世纪五十年代提出的感知器是用来模拟生物体神经元活动的模型。感知器接收二进制
+输入并输出一个二进制结果。感知器是组成人工神经网络的基础模块，通过多个感知器的
+级联可用来表征复杂的决策过程。在原始感知器模型的基础上引入的激活函数是感知器中参数的自动化
+训练成为可能，因为它使感知器的输出由离散的量变为连续的量，从而让感知器内部参数的微小变化
+只会导致输出的微小改动。多个带有激活函数的感知器的互联可用来处理需要高阶抽象能力的问题，
+这种互联的网络被称作人工神经网络。人工神经网络一般多层感知器级联而成。所有网络的输入都直接
+来自于上一层输出的神经网络被称为前馈神经网络，若网络中存在循环结构则被称为循环神经网络。
+神经网络的误差函数可在交叉熵的基础上定义，误差函数用来在采用梯度下降算法优化网络参数时
+评估模型预测性能。反向传播算法使计算误差函数对于各层权值和偏置的梯度称为可能，这是梯度下降法
+求解最优化问题时的关键步骤。卷积网络是近年来火热的解决图像等二维数据识别问题的有效网络结构，
+其结构主要特点是局部感受野、子采样和权值共享。卷积神经网络特别适合解决雷达B扫图像的相关识别问题。
