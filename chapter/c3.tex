@@ -344,8 +344,109 @@ FDTD网格中。
 	\caption[]{维瓦尔第天线辐射电场值图}
 	\label{vivaldi_propagation}
 \end{figure}
-
 \section{B 扫数据的批量生成}
-\section{本章小结}
-本章首先研究了时域积分方程时间步进算法的阻抗元素精确计算技术，分别采用DUFFY变换法与卷积积分精度计算法计算时域阻抗元素，通过算例验证了计算方法的高精度。
+利用Gprmax结合前面实现的土壤模型和天线模型可以很方便地完成雷达回波数据的仿真。只需要定义好模型的几何尺寸和介质，信号源的频率和波形，以及
+采集时间窗大小，就可以得到一道雷达回波。探地雷达在实际工作时一般会将天线在地面上沿水平移动并且按照一定的时间间隔记录一系列的波形，将这些
+回波波形组合起来就可以得到雷达B扫图像。同样，在Gprmax里也可以定义天线的移动的方向和间隔还有采集的回波数量，从而得到收发天线在模型内不同
+位置的仿真结果，然后得到二维B扫图像。
 
+如前所述，本章的目标是得到一系列的拟真B扫图像以供开发后面深度学习目标识别算法时使用。基于前面小节的内容，本节将介绍批量生成目标介质、位置、
+大小和深度随机变化的B扫图像的过程。
+
+Gprmax 的建模是以文本形式的配置文件为基础的。在配置文件可以定义与仿真相关的参数，比如时间窗大小，介质参数，目标体大小等等。
+配置文件里定义相关参数有命令法和脚本法两种。其中命令法最为基础，只要将相关建模命令的名称和参数直接组合起来
+写在一行即可。比如\#domain 10 5 2就定义了整个仿真空间的大小为10x5x2米。脚本法比较灵活，可以通过函数调用
+来使用建模命令，同时脚本法内还可以利用python语言控制极其复杂的建模操作，更重要的是命令法中需要手动写入
+的参数在脚本法中都可以用变量代替，在修改模型某些几何参数时不用重新人工计算各个几何体的位置参数，
+从而在复杂模型的构建时大大减小了出错的可能性。
+
+利用脚本法可以满足构建本章介绍的复杂模型的需要。然而在批量生成仿真数据时，仿真模型内的目标参数在每次仿真时
+都会发生变化，仅仅利用脚本法每次只能生成单一的模型。笔者在这里使用一个控制Gprmax仿真的调度程序配合配置文件模板
+来解决这一问题。配置文件模板和标准的Gprmax配置文件格式一致，但是其中在每次仿真时需要随机变化的参数都以占位符
+代替。调度程序本身也是一个python脚本，其功能是按照仿真需要生成符合预定范围的目标参数，然后将实际的目标参数
+填写到配置文件模板里，最后调度程序将填写好的模板生成对应的配置文件并执行仿真。
+这一流程可以用图\ref{gprmax_batch_model_procedure}描述。
+\begin{figure}[htbp]
+	\includegraphics[]{model_procedure.pdf}
+	\caption[]{模型批量生成流程图}
+	\label{gprmax_batch_model_procedure}
+\end{figure}
+\begin{figure}[htbp]
+	\includegraphics[]{simu_chart.pdf}
+	\caption[]{配置文件模板所对应模型剖面示意图}
+	\label{simulation_chart}
+\end{figure}
+
+图\ref{simulation_chart}给出了本节所定义的配置文件模板所对应模型的剖面示意图。仿真空间长度为6m，宽度为1.5m，
+高度为3m，网格尺寸为0.005m，PML层厚度为0.05m（10个网格）；仿真空间的下半部分为拟真土壤模型，其中沙土与粘土所占
+比例都是50\%，密度为$2g/cm^3$，含水量变化范围为0.1\%-2\%；天线离地面高度为0.2m，收发间距0.4m，天线起始位置
+离模型的最左边0.5m，天线的移动总距离为4.6m，天线的移动步长为0.02m，总共采集230个位置的数据；信号源的波形为高斯脉冲，
+中心频率为200MHz。
+
+前面提到调度程序需要定义目标的参数范围。本文拟对地下目标的材质、位置、尺寸、深度等信息做识别，所以这里需要对
+这些参数给定一个范围，让调度程序从中随机选择并生成B扫数据。
+表\ref{table_geometry}给出了批量仿真时几何参数
+范围；表\ref{table_material}给出了目标体可能的几种介质类型。
+\begin{table}[h]
+	\caption{目标体几何参数范围} 
+	\begin{tabular}{|c|c|c|c|} 
+		\hline  
+		参数 &  最小值 & 最大值 \\
+		\hline 
+		水平坐标(m) & 2 & 4 \\  
+		\hline  
+		尺寸(m) & 0.1 & 0.3 \\  
+		\hline  
+		深度(m) & 0.1 & 0.4 \\  
+		\hline  
+	\end{tabular}
+	\label{table_geometry}
+\end{table}
+
+\begin{table}[h]
+	\caption{目标体介质类型} 
+	\begin{tabular}{|c|c|c|c|} 
+		\hline  
+		介质 &  相对介电常数 & 电导率($S/m$)\\
+		\hline 
+		金属 & 10 & $10\times10^6$ \\  
+		\hline  
+		岩石 & 8 & $1\times10^{-6}$ \\  
+		\hline  
+		水 & 80 & $1\times10^{-6}$ \\  
+		\hline  
+	\end{tabular}
+	\label{table_material}
+\end{table}
+
+定义好配置文件模板和调度程序中的参数范围便可以用来批量生成模型和对应的B扫数据。笔者在研究过程中
+共自动生成了100个模型和B扫数据。图\ref{model_example}给出了其中两个模型的三维可视化结果。图
+\ref{model_example}(a)的中的目标材质为金属，水平位置为3.6m，尺寸为0.18m，深度为0.33m；
+图\ref{model_example}(b)的中的目标材质为岩石，水平位置为2.68m，尺寸为0.12m，深度为0.36m。
+
+图\ref{bscan_example}给出了与图\ref{model_example}中的两个模型对应的仿真结果（已经过去背景处理）。
+可以看到地面反射由于地面的起伏有较大的抖动。
+\begin{figure}[htbp]
+	\subfigure[]{
+		\includegraphics[width=0.8\textwidth]{model4.png}}
+	\subfigure[]{
+		\includegraphics[width=0.8\textwidth]{model5.png}
+	}
+	\caption{随机模型示例}
+	\label{model_example}
+\end{figure}
+
+\begin{figure}[htbp]
+	\subfigure[]{
+		\includegraphics[]{bscan4.pdf}}
+	\subfigure[]{
+		\includegraphics[]{bscan5.pdf}
+	}
+	\caption{批量生成的B扫示例}
+	\label{bscan_example}
+\end{figure}
+\section{本章小结}
+本章介绍了FDTD仿真的基本原理和开源数值仿真平台Gprmax并
+基于土壤介质参数半经验模型和FFT分形数据生成算法形成真实土
+壤模型构建方法；针对模拟天线传输特征的问题，研究将真实天线几何模型内置到FDTD网
+格的方法。最后结合配置文件模板和调度程序批量得到拟真雷达B扫图像。
