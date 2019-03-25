@@ -14,5 +14,5 @@
 !./example.pdf
 .vscode
 .DS_Store
-.vti
-.out
+*.vti
+*.out
