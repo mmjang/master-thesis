@@ -1,7 +1,103 @@
 \chapter{基于卷积神经网络的目标识别研究}
 \section{概述}
 \section{在仿真数据上的研究}
+首先从数学上对本节的问题进行描述。设第三章所得到的B扫数据为一系列尺寸为$w\times h$的二维矩阵
+$\mathbf{A}_i(i = 1...N)$，其中$N$代表所生成
+B扫的总数量，$w$表示每道回波的采样点数，$h$表示每个B扫中所包含的波形道数。
+对于每一个B扫$\mathbf{A_i}$，还可以设$m_i$、$p_i$、$s_i$、$d_i$分别为其建模时设定的目标材质、
+目标水平位置、目标尺寸和目标深度。目标材质$m_i$为取值范围是0到3的整数，分别代表“无目标”、“岩石”，
+“水”，“金属”这几种情况。本节的目的就是设计并训练深度神经网络使其对于给定的$\mathbf{A_i}$可以
+较为近似地输出$m_i$、$p_i$、$s_i$、$d_i$的预测值$m_i^{\prime}$、$p_i^{\prime}$、$s_i^{\prime}$、
+$d_i^{\prime}$。
+
+就如何预测这四个值的问题，笔者做如下考虑。目标材质$m_i$是一个只有四种取值的离散值，所以对于材质
+的预测是一个典型的分类问题，可以尝试用多层卷积网络辅之以softmax分类器解决。而$p_i$、$s_i$和$d_i$
+的取值都是一个连续的实数，不能按常见的多分类问题处理。对于水平位置$p_i$和尺寸$s_i$，
+可以联系到探地雷达数据的以下两个特点：第一，只有收发天线移动到目标附近时才会产生明显的反射信号；
+第二，目标的尺寸将影响到B扫图像上反射信号的持续范围。基于这两个特点，可以设想若对于天线移动过程中的
+所有位置均作材质预测，而不是对于整幅B扫图像作单一的预测，则可以利用材质预测的结果对目标水平位置和
+尺寸做出判断。而对于深度值$d_i$，笔者拟采用处理回归问题的方法输出连续的预测值。
 \subsection{数据预处理}
+在设计和训练深度网络之前，首先必须准备好训练样本$\mathbf{X}_{train}$、训练样本标签$\mathbf{Y}_{train}$、
+测试样本$\mathbf{X}_{test}$、测试样本标签$\mathbf{Y}_{test}$。由于在这里要对天线经过的每个位置均
+做出材质预测，所以必然要对原始B扫数据做出切分处理，使得天线经过的每个位置都对应一小块B扫图像的子区域，
+另外还需要在样本标签中设置对应这些子区域的标签向量来表示实际的材质。完整的数据切分过程如下：
+
+1. 定义图像子区域的尺寸为$w_{sub}\times h$，天线每次移动距离为$d_{antenna}$，其中$w_{sub}$为子区域的宽度，其值大致等于B扫图像中双曲线
+图案宽度的一半。
+
+2. 设训练样本由$\mathbf{A}_1$...$\mathbf{A}_{N^{\prime}}$产生，
+训练样本由$\mathbf{A}_{N^{\prime} + 1}$...$\mathbf{A}_{N}$产生，
+则训练和测试样本按如下公式产生：
+\begin{equation}
+	\begin{aligned}
+	\mathbf{X_{train}}[k] &= \mathbf{A}_i[x_{start}:x_{start} + w_{sub}]\qquad (i = 1...N^{\prime})\\
+	\mathbf{X_{test}}[k] &= \mathbf{A}_i[x_{start}:x_{start} + w_{sub}]\qquad (i = N^{\prime} + 1...N)
+	\end{aligned}
+\end{equation}
+其中$i = 1...N$，$x_{start} = 1...w - w_{sub}$，$k = 1 ... i \times (w-w_{sub})$；符号$A[a:b]$代表从$a$行
+到$b$取子矩阵。
+
+3. 训练样本标签和测试样本标签由收发天线中心到目标物水平位置的距离是否小于目标尺寸的两倍确定，写成公式形式为：
+$$
+\mathbf{Y}[i] = 
+	\begin{cases} 
+		onehot(m_i) & |(x_{start} + w_{sub} / 2 - \frac{p_i}{d_{antenna}}| \leq \frac{2 s_i}{d_{antenna}} \\
+		onehot(1)   & Others
+	\end{cases}
+$$
+其中$onehot(m_i)$函数表示将介质类型所对应的整数转化为对应的四阶向量形式，即$onehot(1)=[1\quad 0 \quad 0 \quad 0]$，
+$onehot(2)=[0\quad 1 \quad 0 \quad 0]$...$onehot(4)=[0\quad 0 \quad 0 \quad 1]$。
+\begin{figure}[htbp]
+	\includegraphics{bscan_slice.pdf}
+	\caption[]{B扫数据切分示意图}
+	\label{bscan_slice}
+\end{figure}
+
+图\ref{bscan_slice}为数据切分过程的示意图。图中的B扫图像对应的是某金属目标的图像，所以在目标附近的子图像对应的
+标签为[0 0 0 1]，而远离目标的子图像对应的标签为[1 0 0 0]，表示无目标。
+
+接下来还需要对样本数据进行更进一步的处理，分别是时间子采样和归一化。进行时间子采样的原因是雷达B扫数据特别是仿真得出
+的B扫数据往往在时间方向上的数据点数$w$比行进距离方向的数据点数$h$多一个量级以上，这样既会导致数据量太大影响
+训练速率也会导致切分后的子图像的纵横比过大而导致矩形卷积核无法图像上的目标特征，因此在不影响图像本来形态的情况下
+可以对原始数据在时间方向上做子采样处理，使纵横比大致处于一个量级。而归一化操作的目的是使所有数据的值限定在[0, 1]范围
+内，从而使所有的样本都处于同一量级，避免奇异样本的影响。
+
+时间子采样处理的数学表达为：
+\begin{equation}
+	\mathbf{A}^{\prime}_i[m, n] = \mathbf{A}_i[m, t_{sample} n] \qquad
+	 (i = 1...N, m = 1...h, n = 1...[\frac{w}{t_{sample}}]) 
+\end{equation}
+
+常见归一化方法为最大最小归一化，其数学表达式为：
+\begin{equation}
+	\mathbf{X}_i^{\prime}=\frac{\mathbf{X}_i-\min (\mathbf{X}_i)}
+	{\max (\mathbf{X}_i)-\min (\mathbf{X}_i)}
+\end{equation}
+
+经过前面的处理，第三章的100幅B扫数据被处理为17820道数据，其中各类型的样本数量如表\ref{table_sample_kind_unbalanced}所示。
+\begin{table}[h]
+	\caption{各类型样本数量} 
+	\begin{tabular}{|c|c|c|} 
+		\hline  
+		样本类型 &  数量\\
+		\hline 
+		无目标 & 13385 \\  
+		\hline  
+		岩石 & 1507 \\  
+		\hline  
+		水 & 1142\\
+		\hline
+		金属 & 1386 \\
+		\hline  
+	\end{tabular}
+	\label{table_sample_kind_unbalanced}
+\end{table}
+
+可以看出四种类型的样本中，岩石、水和金属的样本数量大致相等而无目标样本的数量远远大于其他类型，这样会导致
+样本不平行的问题，从而影响后面深度神经网络的训练结果。为了解决这个问题可以在无目标样本中剔除部分数据，
+使其剩余数量等于其他三类样本数量的平均值。
+
 \subsection{网络结构设计与训练}
 \subsection{结果分析}
 \section{在实验数据上的研究}
