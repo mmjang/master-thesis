@@ -257,11 +257,18 @@ batchsize 为 128 时每训练一轮所需时间为17秒。图\ref{loss_acc_curv
 	\label{position_bar}
 \end{figure}
 
-图\ref{size_bar}给出了在测试B扫数据上目标水平位置的预测结果。目次尺寸预测的平均相对误差为8.1\%。
+图\ref{size_bar}给出了在测试B扫数据上目标水平位置的预测结果。目次深度预测的平均相对误差为8.1\%。
 \begin{figure}[htbp]
 	\includegraphics{size_bar.pdf}
 	\caption[]{目标尺寸预测结果}
 	\label{size_bar}
+\end{figure}
+
+图\ref{depth_bar}给出了在测试B扫数据上目标深度的预测结果。目标深度预测的平均相对误差为3.1\%。
+\begin{figure}[htbp]
+	\includegraphics{depth_bar.pdf}
+	\caption[]{目标深度预测结果}
+	\label{depth_bar}
 \end{figure}
 \section{在实验数据上的研究}
 为了验证前述深度网络在实测雷达B扫数据上的效果，本节采用某次在沙坑进行的探地雷达金属地雷目标探测实验的数据并尝试
@@ -294,7 +301,14 @@ batchsize 为 128 时每训练一轮所需时间为17秒。图\ref{loss_acc_curv
 2. 本次实验标签无法通过计算机程序直接计算得出，而是需要根据现场的实验记录人工标注。
 
 通过切分处理，最后共得到7266组训练样本和1038组测试样本。
-\subsection{网络训练和结果分析}
+\subsection{网络设计与训练和结果分析}
+和预处理一样，用于实验数据的网络结构和表\ref{table_network_structure}所示网络结构大体一致，不同的是此时
+网络处理的是一共二分类问题，所以网络最后一层的神经元数量为2。
+
+图\ref{sandpit_result}给出测试B扫片段与其对应预测结果。其中，预测结果以目标概率的形式给出，在统计最终
+正确率时我们将概率小于50\%的情况视作没有目标，大于50\%的情况是做存在目标。表\ref{table_sanpit_acc}给出了
+在测试数据上的总正确率、虚警率和漏报率。对于地雷检测等危险物检测来说，在总正确率不变的情况下，漏报率应越小越好，
+这样才能最大程度地保证操作人员的安全。
 \begin{figure}[htbp]
 	\includegraphics{sandpit_result.pdf}
 	\caption[]{沙坑实验结果示例}
@@ -313,4 +327,10 @@ batchsize 为 128 时每训练一轮所需时间为17秒。图\ref{loss_acc_curv
 	\label{table_sanpit_acc}
 \end{table}
 \section{本章小结}
- 
+本章研究探地雷达B扫数据预处理方法及其数学描述，形成了以水平分割
+为基础的数据分解及标签设置方法；对于位置、介质和尺寸的识别，本章
+设计并训练了一个深度卷积神经网络用来对分割数据的介质种类做多分类
+识别，并以此为基础完成对位置和尺寸信息的推算；对于深度信息的识别
+问题，本文构建基于一维数据的回归深度神经网络，并直接在上一个网络的识别基
+础上给出目标的深度信息。最后，本文分别在仿真数据和实测数据上验证
+了模型的识别效果。
