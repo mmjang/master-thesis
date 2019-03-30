@@ -1,5 +1,6 @@
 \chapter{基于卷积神经网络的目标识别研究}
-\section{概述}
+前面两章介绍深度学习的理论基础和地下目标仿真技术，本节将在这两章的基础上对仿真数据和实测数据实现
+基于深度卷积网络的目标识别。主要内容包括：数据的预处理过程，网络模型的设计和训练，结果分析等。
 \section{在仿真数据上的研究}
 首先从数学上对本节的问题进行描述。设第三章所得到的B扫数据为一系列尺寸为$w\times h$的二维矩阵
 $\mathbf{A}_i(i = 1...N)$，其中$N$代表所生成
@@ -99,6 +100,11 @@ $onehot(2)=[0\quad 1 \quad 0 \quad 0]$...$onehot(4)=[0\quad 0 \quad 0 \quad 1]$�
 使其剩余数量等于其他三类样本数量的平均值。
 
 \subsection{网络结构设计与训练}
+本节将设计和训练两个相互联系的深度卷积网络，分别称为“分类网络”和“回归网络”。其中，分类网络主要
+解决的问题是对切分后子图像的目标材质的识别。而水平位置和尺寸的预测也可根据分类网络的输出结果
+间接获得。和分类网络输出一个离散的分类结果不一样，回归网络的输出结果是一个实数，它的作用是对目标的
+深度进行预测。
+\subsubsection{分类网络}
 本节所设计的网络结构以图\ref{cnn_structure}所示的卷积神经网络为基础，而具体的各层参数经过不断地试验尝试，
 得到反复改进，最终形成了如表\ref{table_network_structure}所示的网络结构。
 \begin{table}[h]
@@ -141,8 +147,8 @@ $onehot(2)=[0\quad 1 \quad 0 \quad 0]$...$onehot(4)=[0\quad 0 \quad 0 \quad 1]$�
 	\label{table_network_structure}
 \end{table}
 
-Dropout: A Simple Way to Prevent Neural Networks from Overfitting。
-此网络共使用了6层卷积结构，在每个卷积网络层之后均使用了Dropout层。Dropout层的作用是缓解深度神经网络常出现
+此网络共使用了6层卷积结构，在每个卷积网络层之后均使用了Dropout层。根据文献\cite{srivastava2014dropout}，
+Dropout层的作用是缓解深度神经网络常出现
 的过拟合问题。所谓过拟合，就是指在有限的数据上拟合了过于复杂的模型，从而使模型学习了数据上过于细节的特征。
 过拟合会使模型在新数据上的泛化能力不够。将多个模型组合起来也能被用来减轻过拟合的问题，但是这种方法需要
 消耗很多的模型训练时间。Dropout层在减轻过拟合方面不需要额外的计算消耗而且效果明显，其基本思路是在训练过程中
@@ -155,16 +161,60 @@ Dropout: A Simple Way to Prevent Neural Networks from Overfitting。
 另外每个卷积层的卷积核数量，即特征图的数量，在使用汇聚层之后均成倍增加。比如从第四层到第七层卷积核数就从64
 增加到了128。这样做的考虑是汇聚层的使用会使数据
 丢失近一半的信息（图像的尺寸减半），所以应增加特征图数量来弥补这一问题。
+
+此神经网络模型采用python机器学习库Keras实现，后端为 Tensorflow，训练所用硬件为GeForce GTX 1080 Ti显卡。在
+batchsize 为 128 时每训练一轮所需时间为17秒。图\ref{loss_acc_curve}为训练50轮时的损失函数曲线和正确率曲线。
 \begin{figure}[htbp]
-	\includegraphics{loss_curve.pdf}
-	\caption[]{损失函数曲线}
-	\label{loss_curve}
+	\subfigure[]{
+		\includegraphics{loss_curve.pdf}
+		\label{loss_curve}
+	}
+	\subfigure[]{
+		\includegraphics{acc_curve.pdf}
+		\label{acc_curve}
+	}
+	\caption{（a）损失函数曲线；（b）正确率曲线}
+	\label{loss_acc_curve}
 \end{figure}
+\subsubsection{回归网络}
+对于目标深度的预测不能传统的分类问题，而且深度的值也不能像尺寸和水平位置一样通过分类的结果间接得到，所以这里需要
+另外设计一个网络来解决深度值的预测问题。
+
+通过观察某B扫图像处于目标中心位置那道波形（图\ref{trace_above_object}），可以看出在5-10ns处存在强烈的直达波信号，而在15ns处
+还可看到较弱的目标回波，若能训练一个可识别道波形中目标回波的神经网络则可解决深度的判定问题。
 \begin{figure}[htbp]
-	\includegraphics{acc_curve.pdf}
-	\caption[]{训练正确率曲线}
-	\label{acc_curve}
+	\includegraphics{trace_above_object.pdf}
+	\caption{某B扫中位于目标中心处的波形}
+	\label{trace_above_object}
 \end{figure}
+
+按照与表\ref{table_network_structure}类似的结构，笔者设计了一个卷积核宽度为1的深度卷积神经网络。这里将卷积核宽度设定
+为1的原因是：与分类网络不同，此时的输入数据变成了一维波形，所以按照卷积核与输入数据匹配的原则其尺寸也要做相应调整。
+表\ref{table_regression_structure}给出了此网络的结构。
+\begin{table}[h]
+	\caption{地下目标识别神经网络结构} 
+	\begin{tabular}{|c|c|c|} 
+		\hline  
+		层数 &  类型 & 参数\\
+		\hline 
+		1 & 卷积层 & 32个$7\times 1$的核；relu激活\\  
+		\hline
+		2 & 卷积层 & 64个$7\times 1$的核；relu激活\\  
+		\hline
+		3 & 卷积层 & 128个$7\times 1$的核；relu激活\\
+		\hline
+		4 & 全连接层 & 神经元数量：32；relu激活\\
+		\hline
+		5 & 全连接层 & 神经元数量：64；relu激活\\
+		\hline
+		6 & 全连接层 & 神经元数量：1；relu激活\\
+		\hline  
+	\end{tabular}
+	\label{table_regression_structure}
+\end{table}
+
+这里还需注意的是，回归网络的输出层不再是分类网络中用到softmax层，而是一个只有一共神经元的全连接层，这是因为
+回归网络并不需要输出每个分类可能的概率，而仅仅需要输出一连续的实数作为深度的预测结果。
 \subsection{结果分析}
 为了直观地展示上节神经网络的预测结果，图\ref{material_prediction}给出了某幅测试样本中的B扫在
 相同的横坐标下目标介质识别问题的预测结果和实际结果，底部的B扫图像可作为预测结果的参照。
@@ -199,27 +249,25 @@ Dropout: A Simple Way to Prevent Neural Networks from Overfitting。
 	\caption[]{目标材质预测结果}
 	\label{material_bar}
 \end{figure}
-\begin{figure}[htbp]
-	\subfigure[]{
-		\includegraphics{position_bar.pdf}}
-	% \subfigure[]{
-	% 	\includegraphics{position_error_bar.pdf}}
-	\caption{目标水平位置预测结果}
+
+图\ref{position_bar}给出了在测试B扫数据上目标水平位置的预测结果。经计算，水平位置预测的平均相对误差为2.3\%。
+\begin{figure}[htbp]		
+	\includegraphics{position_bar.pdf}
+	\caption[]{目标水平位置预测结果}
 	\label{position_bar}
 \end{figure}
+
+图\ref{size_bar}给出了在测试B扫数据上目标水平位置的预测结果。目次尺寸预测的平均相对误差为8.1\%。
 \begin{figure}[htbp]
-	\subfigure[]{
-		\includegraphics{size_bar.pdf}}
-	% \subfigure[]{
-	% 	\includegraphics{size_error_bar.pdf}}
-	\caption{目标尺寸预测结果}
+	\includegraphics{size_bar.pdf}
+	\caption[]{目标尺寸预测结果}
 	\label{size_bar}
 \end{figure}
 \section{在实验数据上的研究}
 为了验证前述深度网络在实测雷达B扫数据上的效果，本节采用某次在沙坑进行的探地雷达金属地雷目标探测实验的数据并尝试
 对目标的所在位置进行识别。
 \subsection{实验情况介绍}
-现场实验使用自行开发的超宽带（UWB）GPR系统[cite]进行。该系统由发射器，天线，接收器，数据采集板和安装有控制软件的PC机组成。超宽带电磁脉冲通过第三章所述Vivaldi天线由双极性高斯脉冲源辐射，工作频率为210MHz，最大电压为830V。然后，反射信号由另一个天线接收并传送到数据采集板。信号在数据采集板中进行采样和数字化，并通过串口传输到pc软件。 2D扫描图像和其他系统指标在PC软件上实时显示。
+现场实验使用自行开发的超宽带（UWB）GPR系统\citing{huo2014design}进行。该系统由发射器，天线，接收器，数据采集板和安装有控制软件的PC机组成。超宽带电磁脉冲通过第三章所述Vivaldi天线由双极性高斯脉冲源辐射，工作频率为210MHz，最大电压为830V。然后，反射信号由另一个天线接收并传送到数据采集板。信号在数据采集板中进行采样和数字化，并通过串口传输到pc软件。 2D扫描图像和其他系统指标在PC软件上实时显示。
 \begin{figure}[htbp]
 	\includegraphics{sandpit_photo.png}
 	\caption[]{沙坑实验现场}
@@ -233,7 +281,7 @@ Dropout: A Simple Way to Prevent Neural Networks from Overfitting。
 	\label{sandpit_model}
 \end{figure}
 
-实验使用木架搭建了一个简易滑轨，滑轨长3米，收发天线被固定在纸箱两侧并可沿着水平木架行进。实验时，收发天线可由固定在两侧的绳子来回拉动。
+实验使用木架搭建了一个简易滑轨，滑轨长3米，收发天线被固定在纸箱两侧并可沿着水平木架行进（图\ref{sandpit_model}）。实验时，收发天线可由固定在两侧的绳子来回拉动。
 
 由于没有实际的地雷，所以用某个$10\times 10$cm的铁板来代替。实验期间一共收集了7组雷达B扫数据。
 第一组实验时沙坑内没有填埋任何物体。在进行第2组到第6组实验时，铁板分别填埋在图\ref{sandpit_model}中所标识的A-E处。第7组实验时，铁板放置在位置F处，并将塑料瓶埋入50厘米远的地方作为干扰物。1到6组数据用作训练样本。跟踪组7是测试数据。进行每组实验时，天线都会在木架上被来回拉动20次，所以实验共取得140道雷达B扫数据。
@@ -265,3 +313,4 @@ Dropout: A Simple Way to Prevent Neural Networks from Overfitting。
 	\label{table_sanpit_acc}
 \end{table}
 \section{本章小结}
+ 
