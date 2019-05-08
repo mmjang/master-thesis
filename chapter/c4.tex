@@ -270,6 +270,18 @@ batchsize 为 128 时每训练一轮所需时间为17秒。图\ref{loss_acc_curv
 	\caption[]{目标深度预测结果}
 	\label{depth_bar}
 \end{figure}
+
+从以上结果可以看出，第13组的目标材质和尺寸的预测均出现了较大的误差。为此，可画出此组数据的预测结果
+和B扫的对比图\ref{group13}。
+\begin{figure}[htbp]
+	\includegraphics{material_prediction_93.pdf}
+	\caption[]{第13组数据预测结果}
+	\label{group13}
+\end{figure}
+
+可以看出，第13组模型中目标的深度浅，出现了目标回波与直达波近乎重合的情况，由于训练数据中
+此种极端情况出现不足，神经网络未能正确处理这种情况下的目标识别问题。
+
 \section{在实验数据上的研究}
 为了验证前述深度网络在实测雷达B扫数据上的效果，本节采用某次在沙坑进行的探地雷达金属地雷目标探测实验的数据并尝试
 对目标的所在位置进行识别。

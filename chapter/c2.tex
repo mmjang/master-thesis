@@ -24,7 +24,7 @@ Walter Pitts 的关于人类神经活动的模拟的研究提出并发展而来�
 如图\ref{perceptron}所示，感知器接收若干个二进制输入，在经过简单的运算后输出一个二进制结果。
 Rosenblatt 提出了一种计算感知机输出值的简易准则，他引入“权重（weight）”
 的概念，用实数$w_1, w_2,...$来表示每个输入的重要性。最后神经元的输出，0 或者 1，是由加权和 $\sum_j w_{j}x_{j}$是否小于某个门限值决定的。和
-权重一样，门限值也是神经元的一个实数参数。以上准则可由下面的公式\ref{eqn:perceptron}表示：
+权重一样，门限值也是神经元的一个实数参数。以上准则可由下面的公式（\ref{eqn:perceptron}）表示：
 \begin{equation}
 \label{eqn:perceptron}
 out = \left\{ \begin{array} { l l } { 0 } & { \text { if } \sum _ { j } w _ { j } x _ { j } \leq \text { 门限 } } \\ { 1 } & { \text { if } \sum _ { j } w _ { j } x _ { j } > \text { 门限 } } \end{array} \right.
@@ -59,7 +59,7 @@ out = \left\{ \begin{array} { l l } { 0 } & { \text { if } \sum _ { j } w _ { j 
 如图\ref{layeredperceptron}，第一层感知器一共做出三项简单决策，这三项决策又接着输入到第二层的两个感知器得出两个更进一步的决策，最后这两个决策又输入到最后一个感知器得到
 最后的决策。这种级联方式可以让后面的感知器得出比前面的感知器更抽象的结果，从而解决更加复杂的决策问题。
 
-通过引入“偏置（bias）”$b$，公式\ref{eqn:perceptron}也可以改写为公式\ref{eqn:perceptronbias}:
+通过引入“偏置（bias）”$b$，公式（\ref{eqn:perceptron}）也可以改写为公式（\ref{eqn:perceptronbias}）:
 \begin{equation}
 	\label{eqn:perceptronbias}
 out = \left\{ \begin{array} { l l } { 0 } & { \text { if } w \cdot x + b \leq 0 } \\ { 1 } & { \text { if } w \cdot x + b > 0 } \end{array} \right.
@@ -115,7 +115,7 @@ $\sigma$ 函数并不是唯一的激活函数，常用的激活函数还有 ReLU
 	\label{relu}
 \end{figure}
 
-从公式\ref{eqn:relu}和图\ref{relu}可以观察到 ReLU 函数在小于0的范围内都为0，而在大于0的区间其值等于自变量，这叫做单侧抑制。文献\cite{glorot2011deep}指出该激活函数可以有效缓解
+从公式（\ref{eqn:relu}）和图\ref{relu}可以观察到 ReLU 函数在小于0的范围内都为0，而在大于0的区间其值等于自变量，这叫做单侧抑制。文献\cite{glorot2011deep}指出该激活函数可以有效缓解
 神经网络训练过程中“梯度消失”的问题。
 
 \section{神经网络结构}
@@ -169,7 +169,7 @@ $\mathbf { z } ^ { ( l ) } \in \mathbb { R } ^ { m ^ { l } }$ 表示$l$层神经
 	\mathbf { a } ^ { ( l ) } = f _ { l } \left( \mathbf { z } ^ { ( l ) } \right)
 \end{equation}
 
-\ref{eqn:qiankuichuanbo1} 与 \ref{eqn:qiankuichuanbo2} 也可以合并为：
+式（\ref{eqn:qiankuichuanbo1}） 与 式（\ref{eqn:qiankuichuanbo2}） 也可以合并为：
 \begin{equation}
 	\label{eqn:qiankuichuanbo3}
 	\mathbf { z } ^ { ( l ) } = W ^ { ( l ) } \cdot f _ { l - 1 } \left( \mathbf { z } ^ { ( l - 1 ) } \right) + \mathbf { b } ^ { ( l ) }
@@ -189,7 +189,7 @@ $\mathbf { z } ^ { ( l ) } \in \mathbb { R } ^ { m ^ { l } }$ 表示$l$层神经
 	\mathbf{x}=\mathbf{a}^{(0)} \rightarrow \mathbf{z}^{(1)} \rightarrow \mathbf{a}^{(1)} \rightarrow \mathbf{z}^{(2)} \rightarrow \cdots \rightarrow \mathbf{a}^{(L-1)} \rightarrow \mathbf{z}^{(L)} \rightarrow \mathbf{a}^{(L)}=\varphi(\mathbf{x} ; W, \mathbf{b}) )
 \end{equation}
 
-1989 年，Cybenko 等人的研究证明【引用】，上述前馈神经网络所表征的 $\phi(\mathbf{x} ; W, \mathbf{b})$ 函数在隐含神经元足够多的情况下，可以无限
+1989 年，Cybenko 等人的研究证明\cite{cybenko1989approximation}，上述前馈神经网络所表征的 $\phi(\mathbf{x} ; W, \mathbf{b})$ 函数在隐含神经元足够多的情况下，可以无限
 你和任意的连续非线性函数。这说明神经网络具有通用近似能力，这也是用神经网络来解决机器学习问题的理论基础。
 
 对于分类问题，还需要将 $\phi$ 函数作为某种分类器的输入，从而得到每种类别的概率。
@@ -198,7 +198,7 @@ $\mathbf { z } ^ { ( l ) } \in \mathbb { R } ^ { m ^ { l } }$ 表示$l$层神经
 \end{equation}
 其中，$\hat{y}$ 为每类的概率输出，$\theta$ 为分类器的参数，$g$ 为分类器。
 
-对于多分类问题，常用的分类器为 Softmax 分类器。对于具有$N$个分类的多分类问题，式\ref{eqn:softmax}给出了 softmax 函数的定义。softmax 函数可以
+对于多分类问题，常用的分类器为 Softmax 分类器。对于具有$N$个分类的多分类问题，式（\ref{eqn:softmax}）给出了 softmax 函数的定义。softmax 函数可以
 将一组 $\phi$ 给出的输出转化为一组总和为1的概率，并且不影响转化前的大小相对关系。通过分类器的归一化之后的概率输出便可得出最可能的预测，因此分类器
 基本上位于网络的最后一层。
 \begin{equation} 
@@ -207,7 +207,7 @@ $\mathbf { z } ^ { ( l ) } \in \mathbb { R } ^ { m ^ { l } }$ 表示$l$层神经
 \end{equation}
 
 上面说明了数据在前馈神经网络中正向传播的过程。为了使神经网络得到可靠的预测结果，需要对网络的参数，包括各层的权值和偏置，进行训练。训练一般采用
-梯度下降算法，梯度下降时需要一个评估模型预测性能的损失函数。损失函数一般由模型预测结构和真实结构的交叉熵计算得出。交叉熵由式\ref{eqn:cross_entrophy}定义。
+梯度下降算法，梯度下降时需要一个评估模型预测性能的损失函数。损失函数一般由模型预测结构和真实结构的交叉熵计算得出。交叉熵由式（\ref{eqn:cross_entrophy}）定义。
 \begin{equation}
 \label{eqn:cross_entrophy} 
 \mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})=-\mathbf{y}^{\mathrm{T}} \log \hat{\mathbf{y}}
@@ -222,7 +222,7 @@ $\mathbf { z } ^ { ( l ) } \in \mathbb { R } ^ { m ^ { l } }$ 表示$l$层神经
 =\frac{1}{N} \sum_{n=1}^{N} \mathcal{L}\left(\mathbf{y}^{(n)}, \hat{\mathbf{y}}^{(n)}\right)+\frac{1}{2} \lambda\|W\|_{F}^{2}
 \end{equation}
 其中$\mathbf{W}$和$\mathbf{b}$分别表示网络中的权重和偏置；其中$\|W\|_{F}^{2}$为了防止过拟合现象而引入的正则化项；$\lambda$是为正数的参数。
-这里的正则化项一般由Frobenius范数（式\ref{eqn:frobenius}）给出：
+这里的正则化项一般由Frobenius范数（式（\ref{eqn:frobenius}））给出：
 \begin{equation} 
 \label{eqn:frobenius}
 \|W\|_{F}^{2}=\sum_{l=1}^{L} \sum_{i=1}^{m^{(l)}} \sum_{j=1}^{(l-1)}\left(W_{i j}^{(l)}\right)^{2}
@@ -295,11 +295,11 @@ $\mathbf{z}^{(l)}=W^{(l)} \mathbf{a}^{(l-1)}+\mathbf{b}^{(l)}$可得
 \end{equation}
 $\odot$是向量点积运算。
 
-从式\ref{eqn:back_propagation}可以看出，后一层（$l+1$层）的误差项决定了前一层（$l$层）的误差项，这种误差沿着网络向上一层传播的
-现象被称为反向传播。式\ref{eqn:back_propagation}的含义是后一层某个神经元的
+从式（\ref{eqn:back_propagation}）可以看出，后一层（$l+1$层）的误差项决定了前一层（$l$层）的误差项，这种误差沿着网络向上一层传播的
+现象被称为反向传播。式（\ref{eqn:back_propagation}）的含义是后一层某个神经元的
 误差项是后一层与这个神经元连接相连的神经元的误差项的权重和乘上该神经元激活函数的梯度。
 
-算得这三个偏导之后，公式\ref{eqn:partial_l_partial_w}可写成
+算得这三个偏导之后，公式（\ref{eqn:partial_l_partial_w}）可写成
 \begin{equation} 
 \frac{\partial \mathcal{L}(\mathbf{y}, \hat{\mathbf{y}})}{\partial W_{i j}^{(l)}}=\mathbb{I}_{i}\left(a_{j}^{(l-1)}\right)^{\mathrm{T}} \delta^{(l)}=\delta_{i}^{(l)} a_{j}^{(l-1)}
 \end{equation}
@@ -322,7 +322,7 @@ $\odot$是向量点积运算。
 
 2. 按从输出层到输入层的方向，即传播方向的反方向计算误差项$\delta^{(l)}$； 
 
-3. 按照式\ref{eqn:gradient_w}和式\ref{eqn:gradient_b}计算每层梯度，并根据梯度下降算法修改参数。
+3. 按照式（\ref{eqn:gradient_w}）和式（\ref{eqn:gradient_b}）计算每层梯度，并根据梯度下降算法修改参数。
 
 上述过程也可用伪代码来描述：
 \begin{algorithm}[H]
@@ -406,7 +406,7 @@ $\odot$是向量点积运算。
 f\left(b+\sum_{l=0}^{k} \sum_{m=0}^{k} w_{l, m} a_{j+l, k+m}\right)
 \end{equation}
 其中，$f$ 是激活函数，$b$ 是共享的偏置，$w_{l,m}$ 是共享的权重矩阵，$a_{j+l,k+m}$ 是对应的感受野输入，$k$ 是感受野尺寸。同时这里还要指出，
-式\ref{eqn:cnn_hidden_neuron}中的求和部分可能看成是一个二维卷积的过程，这也就是卷积神经网络名称的由来。
+式（\ref{eqn:cnn_hidden_neuron}）中的求和部分可能看成是一个二维卷积的过程，这也就是卷积神经网络名称的由来。
 
 从输入层到隐含层的映射被称为特征映射，即此映射包含了从输入数据中学习到的一般特征。在卷积神经网络术语中，共享的权重矩阵
 $\mathbf{w}$和偏置$b$又被称为“核”或者“滤波器”。一般情况下，单个特征映射无法满足抽象出数据中足够多二维特征的要求。
