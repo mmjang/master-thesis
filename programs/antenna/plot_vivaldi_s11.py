@@ -24,7 +24,7 @@ mat_real = np.loadtxt(real_s11_txt)
 mat_gprmax = np.loadtxt(gprmx_s11_txt)
 
 plt.figure(figsize = (normal_width, height))
-plt.plot(mat_real[:,0], mat_real[:,1],'k',label='实测')
+plt.plot(mat_real[:,0], mat_real[:,1],'k--',label='实测')
 plt.plot(mat_gprmax[:,0], mat_gprmax[:,1],'r',label='仿真')
 plt.xlim([0.2, 1])
 plt.ylim([-35, 10])

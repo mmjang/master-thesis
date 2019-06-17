@@ -182,6 +182,8 @@ batchsize 为 128 时每训练一轮所需时间为17秒。图\ref{loss_acc_curv
 
 通过观察某B扫图像处于目标中心位置那道波形（图\ref{trace_above_object}），可以看出在5-10ns处存在强烈的直达波信号，而在15ns处
 还可看到较弱的目标回波，若能训练一个可识别道波形中目标回波的神经网络则可解决深度的判定问题。
+
+根据分类网络的预测结果可得到回归网络的数据集，其中输入数据为每个B扫数据$\mathbf{A}^{\prime}_i$中位于目标中心位置正上方的那道波形，此道波形的位置可由式（4-4）得出。而每个输入数据对应标签则是一个连续的实数，此实数即对应模型中目标的深度。
 \begin{figure}[htbp]
 	\includegraphics{trace_above_object.pdf}
 	\caption{某B扫中位于目标中心处的波形}
@@ -250,7 +252,13 @@ batchsize 为 128 时每训练一轮所需时间为17秒。图\ref{loss_acc_curv
 	\label{material_bar}
 \end{figure}
 
-图\ref{position_bar}给出了在测试B扫数据上目标水平位置的预测结果。经计算，水平位置预测的平均相对误差为2.3\%。
+图\ref{position_bar}给出了在测试B扫数据上目标水平位置的预测结果。经计算，水平位置预测的平均相对误差为2.3\%。在这里，相对误差的计算结果通过下式得出：
+
+\begin{equation}
+	e_r = \frac{mean(|p_i - p_i^{\prime}|)}{p_{range}}
+\end{equation}
+其中$p_{range}$代表目标水平位置的变化范围。以下尺寸、深度的预测结果的相对误差由相同方法得出。
+
 \begin{figure}[htbp]		
 	\includegraphics{position_bar.pdf}
 	\caption[]{目标水平位置预测结果}
@@ -318,8 +326,20 @@ batchsize 为 128 时每训练一轮所需时间为17秒。图\ref{loss_acc_curv
 网络处理的是一共二分类问题，所以网络最后一层的神经元数量为2。
 
 图\ref{sandpit_result}给出测试B扫片段与其对应预测结果。其中，预测结果以目标概率的形式给出，在统计最终
-正确率时我们将概率小于50\%的情况视作没有目标，大于50\%的情况是做存在目标。表\ref{table_sanpit_acc}给出了
-在测试数据上的总正确率、虚警率和漏报率。对于地雷检测等危险物检测来说，在总正确率不变的情况下，漏报率应越小越好，
+正确率时我们将概率小于50\%的情况视作没有目标，大于50\%的情况视作存在目标。这里取50\%作为临界值的原因是分类网络的输出结果是一个概率值，若要输出一个离散的目标存在数据，则可取有目标和没有目标中概率较大的那个值作为结果，因此这里要取50\%概率作为门限。
+
+最终的预测结果的总正确率可由$p_1$、$p_2$、$p_3$表示，其中$p_1$为总正确率、$p_2$为虚警率、$p_3$为漏报率。它们的计算公式是：
+
+\begin{equation}
+	\begin{aligned}
+		p_1 &= \frac{N_c}{N_t} \\
+		p_2 &= \frac{N_{fp}}{N_t} \\
+		p_3 &= \frac{N_{fn}}{N_t}
+	\end{aligned}
+\end{equation}
+其中$N_t$是总测试样本数量，$N_c$是预测结果与实际结果一致的数量，$N_{fp}$是将实际无目标的情况判断成有目标的数量，$N_{fn}$是将实际有目标的情况判断成无目标的数量。
+
+最终得出，总正确率 $p_1$ 为94.2\%，虚警率$p_2$为3.9\%，漏报率$p_3$为1.9\%。对于地雷检测等危险物检测来说，在总正确率不变的情况下，漏报率应越小越好，
 这样才能最大程度地保证操作人员的安全。
 \begin{figure}[htbp]
 	\includegraphics{sandpit_result.pdf}
@@ -327,17 +347,17 @@ batchsize 为 128 时每训练一轮所需时间为17秒。图\ref{loss_acc_curv
 	\label{sandpit_result}
 \end{figure}
 
-\begin{table}[h]
-	\caption{各类型样本数量} 
-	\begin{tabular}{|c|c|c|} 
-		\hline  
-		正确率 & 虚警率 & 漏报率\\
-		\hline
-		94.2\% & 3.9\% & 1.9\%\\
-		\hline
-	\end{tabular}
-	\label{table_sanpit_acc}
-\end{table}
+% \begin{table}[h]
+% 	\caption{各类型样本数量} 
+% 	\begin{tabular}{|c|c|c|} 
+% 		\hline  
+% 		正确率 & 虚警率 & 漏报率\\
+% 		\hline
+% 		94.2\% & 3.9\% & 1.9\%\\
+% 		\hline
+% 	\end{tabular}
+% 	\label{table_sanpit_acc}
+% \end{table}
 \section{本章小结}
 本章研究探地雷达B扫数据预处理方法及其数学描述，形成了以水平分割
 为基础的数据分解及标签设置方法；对于位置、介质和尺寸的识别，本章
